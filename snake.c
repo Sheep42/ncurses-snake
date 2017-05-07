@@ -1,5 +1,7 @@
+#include <time.h>
 #include <ncurses.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #define DELAY 30000
 #define TIMEOUT 10 
@@ -29,10 +31,15 @@
 
 	direction_type currentDir = RIGHT;
 	point snakeParts[255] = {};
+	point food;
 
 /* Functions */
 	void createFood() {
-		//TODO: Create Food
+		//Food.x is a random int between 10 and maxX - 10
+		food.x = (rand() % (maxX - 20)) + 10;
+
+		//Food.y is a random int between 5 and maxY - 5
+		food.y = (rand() % (maxY - 10)) + 5;
 	}
 	
 	void drawPart(point drawPoint) {
@@ -48,6 +55,8 @@
 	}
 
 	void init() {
+		srand(time(NULL));
+
 		currentDir = RIGHT;
 		tailLength = 5;
 		gameOver = false;
@@ -69,8 +78,7 @@
 		//Global var stdscr is created by the call to initscr()
 		getmaxyx(stdscr, maxY, maxX);
 
-		for(int i = 0; i < tailLength; i++) {
-		}
+		createFood();
 
 		refresh();
 	}
@@ -97,7 +105,7 @@
 			getmaxyx(stdscr, maxY, maxX);
 			
 			if(gameOver) {
-				sleep(5);
+				sleep(2);
 				init();
 			}
 
@@ -123,10 +131,21 @@
 				else if(currentDir == UP) nextY--;
 				else if(currentDir == DOWN) nextY++;
 
-				//We are going to set the tail as the new head
-				snakeParts[tailLength - 1].x = nextX;
-				snakeParts[tailLength - 1].y = nextY;
+				if(nextX == food.x && nextY == food.y) {
+					point tail;
+					tail.x = nextX;
+					tail.y = nextY;
 
+					snakeParts[tailLength] = tail;
+
+					tailLength++;
+
+					createFood();
+				} else {
+					//We are going to set the tail as the new head
+					snakeParts[tailLength - 1].x = nextX;
+					snakeParts[tailLength - 1].y = nextY;
+				}
 				//Shift all the snake parts
 				shiftSnake();
 
@@ -143,6 +162,9 @@
 			for(int i = 0; i < tailLength; i++) {
 				drawPart(snakeParts[i]);
 			}
+
+			//Draw the current food
+			drawPart(food);
 
 			//ncurses refresh
 			refresh();
