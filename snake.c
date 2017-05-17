@@ -97,6 +97,32 @@
 		snakeParts[0] = tmp;
 	}
 
+	void drawScreen() {
+		//Clears the screen - put all draw functions after this
+		clear(); 
+
+		//Print game over if gameOver is true
+		if(gameOver)
+			mvprintw(maxY / 2, maxX / 2, "Game Over!");
+
+		//Draw the snake to the screen
+		for(int i = 0; i < tailLength; i++) {
+			drawPart(snakeParts[i]);
+		}
+
+		//Draw the current food
+		drawPart(food);
+
+		//Draw the score
+		mvprintw(1, 2, "Score: %i", score);
+
+		//ncurses refresh
+		refresh();
+
+		//Delay between movements
+		usleep(DELAY); 
+	}
+
 /* Main */
 	int main(int argc, char *argv[]) {
 		cursesInit();
@@ -166,34 +192,13 @@
 				//Shift all the snake parts
 				shiftSnake();
 
-			//Clears the screen
-			clear(); 
+				//Game Over if the player hits the screen edges
+				if((nextX >= maxX || nextX < 0) || (nextY >= maxY || nextY < 0)) {
+					gameOver = true;
+				}
 
-			//Game Over if the player hits the screen edges
-			if((nextX >= maxX || nextX < 0) || (nextY >= maxY || nextY < 0)) {
-				gameOver = true;
-			}
-
-			//Print game over if gameOver is true
-			if(gameOver)
-				mvprintw(maxY / 2, maxX / 2, "Game Over!");
-
-			//Draw the snake to the screen
-			for(int i = 0; i < tailLength; i++) {
-				drawPart(snakeParts[i]);
-			}
-
-			//Draw the current food
-			drawPart(food);
-
-			//Draw the score
-			mvprintw(1, 2, "Score: %i", score);
-
-			//ncurses refresh
-			refresh();
-
-			//Delay between movements
-			usleep(DELAY); 
+			/* Draw the screen */
+				drawScreen();
 		}
 
 		endwin(); //Restore normal terminal behavior
